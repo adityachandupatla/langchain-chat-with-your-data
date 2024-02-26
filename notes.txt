@@ -1,0 +1,76 @@
+
+Document loading:
+
+	In order to chat with an application which can answer questions related to your proprietary data, you must first load the data into an LLM
+
+	Langchain allows you to load data from several sources through their proprietary libraries
+
+	Langchain uses an internal standard format to load the documents
+
+Document splitting:
+
+	Once we have the document loaders ready, we are not yet fully equipped with a domain-specific LLM. We need to split our documents into smaller pieces of chunks which the LLM can proess (as LLM's are limited by I/O token size)
+
+	Splitters typically come with two parameters: chunk size and chunk overlap. The overlap parameter adds some sense of sequentiality to all the input chunks.
+
+	Langchain provides several types of document splitters: based on characters, tokens, and even a NLP model which you can use to customize how to split the input documents
+
+Vectorstores and embedding:
+
+	Incredibly important if you want to build chatbots over your text data
+
+	Text -> Embeddings
+
+	Text with similar meaning will have similar vectors (for some measure of similarity)
+
+	We use document loader to load documents, splitter to split them into chunks, transform each chunk into embedding, and finally store the <embedding, chunk> pairs (along with some metadata) into vector db's
+
+	VectorDB's in turn facilitate vector search (i.e. similarity search between input query and the chunks present inside the DB)
+
+	Edge cases: The problem with vector search is the similarity measure we use. Sometimes the thing which user asks for, might not represent the chunks which we extract, example:
+
+		"What did they say about regression in the third lecture?"
+
+	Our similarity measure might be such that we pick up all relevant chunks which have "regression" in them. However, what the user really is asking for, is the content from 3rd lecture - this structured piece of information is what is missing
+
+	Note: When we retrieve chunks from vector DB, we have the ability to set a parameter called 'k' which represents the number of similar items retrieved. We must be careful not to set it too high because we cannot feed all those chunks into LLM's which have small context sizes (input token limits)
+
+Retrieval: (core part of RAG's)
+
+	MMR (maximum marginal relevance) - you may not always want to choose the most similar response (see above counter-example)
+
+	We fetch k similar similar chunks, and then from them we will choose "diverse" chunks so that we can solve the above counter-example
+
+	Other approach: Fetch larger chunks from the vectorDB (and then pass those larger chunks to compression-LLM an intermediate LLM which can compress those larger chunks to smaller-more-meaningful-chunks which we can feed to the final LLM along with our input query)
+
+Question Answering:
+
+	Document Loading -> Splitting -> Storage (vectorstore/vectordb) -> Retrieval -> (Input prompt + retrieved chunks for domain knowledge) -> Output answer
+
+	(This architecture doesn't yet have conversational capabilities. To achieve that we need to feed historic responses back into the model)
+
+Chat:
+
+	We append the above architecture with Memory
+
+	Whenever a model responds with an answer to input prompt, we take the entire chat history, pass it through an LLM (called condense-LLM), and then pass the user's next question along with the condensed-LLM's output to the input of the above architecture
+
+
+
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
+	
+
